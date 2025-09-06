@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Bite - Canteen Reviews</title>
+    <!-- React, Babel, Chart.js, and Heatmap.js for charting -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/heatmap.js/2.0.2/heatmap.min.js"></script>
+    
+    <!-- Custom Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        /* General Body and Reset */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Card Component */
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Button */
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+            cursor: pointer;
+        }
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .navbar-links a {
+            color: #4b5563;
+            font-weight: 600;
+        }
+        .navbar-links a:hover {
+            color: #4f46e5;
+        }
+        .navbar-user-info {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-user-details {
+            text-align: right;
+            margin-right: 1rem;
+        }
+        .navbar-user-details .user-name {
+            font-weight: 600;
+        }
+        .navbar-user-details .user-points {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        .navbar-user-info .btn-primary {
+            width: auto;
+            padding: 8px 12px;
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem;
+        }
+
+        h1 { font-size: 2.25rem; font-weight: bold; margin-bottom: 1.5rem; }
+        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+        
+        /* Grid Layout */
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        
+        /* Media Queries for Responsive Grids */
+        @media (min-width: 768px) { /* md */
+            .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+            .md-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1024px) { /* lg */
+            .lg-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1280px) { /* xl */
+            .xl-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .modal-content-lg {
+             max-width: 800px;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #6b7280;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+         .modal-close-btn:hover {
+            color: #1f2937;
+         }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
+        }
+        .input-with-icon {
+            position: relative;
+        }
+        .input-with-icon .form-input {
+            padding-right: 2.5rem;
+        }
+        .input-icon-btn {
+            position: absolute;
+            inset: 0 0 0 auto;
+            padding: 0 0.75rem;
+            display: flex;
+            align-items: center;
+            color: #6b7280;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+
+        /* Star Rating */
+        .star-rating { display: flex; gap: 0.25rem; }
+        .star-rating svg { width: 1.5rem; height: 1.5rem; cursor: pointer; color: #d1d5db; }
+        .star-rating svg.active { color: #facc15; }
+
+        /* Dish Card */
+        .dish-card { display: flex; flex-direction: column; }
+        .dish-card-content { flex-grow: 1; }
+        .dish-card-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; }
+        .dish-card-category { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; text-transform: capitalize; }
+        .dish-card-footer { display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0; }
+        .dish-card-price { font-size: 1.125rem; font-weight: 600; color: #059669; }
+        .dish-card-rating { display: flex; align-items: center; }
+        .dish-card-rating .star-rating svg { width: 1rem; height: 1rem; }
+        .dish-card-review-count { font-size: 0.875rem; color: #4b5563; margin-left: 0.5rem; }
+        .dish-card .btn-primary { margin-top: 1rem; }
+        
+        /* Review Card & List*/
+        .review-card { margin-bottom: 1rem; }
+        .review-card-header { display: flex; align-items: center; margin-bottom: 0.5rem; }
+        .review-card-avatar {
+            width: 2.5rem; height: 2.5rem; border-radius: 9999px;
+            background-color: #e0e7ff; color: #4338ca;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; margin-right: 0.75rem;
+        }
+        .review-card-user-name { font-weight: 600; }
+        .review-card-timestamp { font-size: 0.75rem; color: #6b7280; }
+        .review-card-comment { color: #374151; margin-top: 0.5rem; }
+        .reviews-container { overflow-y: auto; padding-right: 1rem; flex-grow: 1; }
+
+        /* Auth Pages */
+        .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f9fafb; }
+        .auth-box { max-width: 450px; width: 100%; margin: 0 auto; }
+        .auth-brand { font-size: 2.5rem; font-weight: bold; text-align: center; color: #4f46e5; margin-bottom: 2rem; }
+        .auth-form-container { background-color: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .auth-form-title { font-size: 1.5rem; font-weight: bold; text-align: center; color: #1f2937; margin-bottom: 1.5rem; }
+        .auth-footer { text-align: center; margin-top: 1rem; }
+        .auth-footer p { font-size: 0.875rem; color: #4b5563; }
+        .auth-footer button { font-weight: 600; color: #4f46e5; background: none; border: none; cursor: pointer; }
+        .auth-footer button:hover { text-decoration: underline; }
+        .alert-error { background-color: #fee2e2; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+        .alert-success { background-color: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+
+        /* Leaderboard */
+        .leaderboard-list { list-style: none; padding: 0; margin: 0; }
+        .leaderboard-item { display: flex; align-items: center; padding: 1rem; }
+        .leaderboard-item:hover { background-color: #f9fafb; }
+        .leaderboard-rank {
+            width: 2.5rem; height: 2.5rem; border-radius: 9999px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.125rem; margin-right: 1rem;
+        }
+        .rank-1 { background-color: #fcd34d; color: #78350f; }
+        .rank-2 { background-color: #d1d5db; color: #1f2937; }
+        .rank-3 { background-color: #f59e0b; color: #fef3c7; }
+        .rank-other { background-color: #f3f4f6; }
+        .leaderboard-user-details { flex-grow: 1; }
+        .leaderboard-user-name { font-weight: 600; font-size: 1.125rem; }
+        .leaderboard-badges { display: flex; gap: 0.5rem; margin-top: 0.25rem; }
+        .badge { font-size: 0.75rem; background-color: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
+        .leaderboard-points { text-align: right; font-weight: bold; font-size: 1.25rem; color: #4f46e5; }
+        
+        /* Admin Page */
+        .admin-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        .admin-nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .admin-nav-btn.active { background-color: #4f46e5; color: white; }
+        .admin-nav-btn:not(.active):hover { background-color: #e5e7eb; }
+        .chart-container { height: 24rem; } /* 384px */
+
+        /* Chatbot */
+        .chatbot {
+            position: fixed;
+            bottom: 1.25rem; right: 1.25rem;
+            width: 320px; height: 384px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+        }
+        .chatbot-header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-header h3 { font-weight: bold; margin-bottom: 0; }
+        .chatbot-header button { color: white; background: none; border: none; cursor: pointer; }
+        .chatbot-header button:hover { color: #c7d2fe; }
+        .chatbot-body { flex-grow: 1; padding: 1rem; overflow-y: auto; }
+        .chat-message { display: flex; margin-bottom: 0.75rem; }
+        .chat-message.user { justify-content: flex-end; }
+        .chat-message.bot { justify-content: flex-start; }
+        .message-bubble {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .message-bubble.user { background-color: #4f46e5; color: white; }
+        .message-bubble.bot { background-color: #e5e7eb; color: #1f2937; }
+        .chatbot-footer { padding: 0.75rem; border-top: 1px solid #e5e7eb; }
+        .chatbot-form { display: flex; }
+        .chatbot-form input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+        .chatbot-form button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0 1rem;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border: none; cursor: pointer;
+        }
+        .chatbot-form button:hover { background-color: #4338ca; }
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 1.25rem; right: 1.25rem;
+            background-color: #4f46e5;
+            color: white;
+            width: 4rem; height: 4rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.875rem;
+            border: none; cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .chatbot-toggle:hover {
+            background-color: #4338ca;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const API_URL = 'http://127.0.0.1:5000/api';
+
+        // --- Helper Components ---
+        const StarRating = ({ rating, setRating }) => {
+            return (
+                <div className="star-rating">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                        <svg
+                            key={star}
+                            onClick={() => setRating && setRating(star)}
+                            className={rating >= star ? 'active' : ''}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                    ))}
+                </div>
+            );
+        };
+
+        const ReviewCard = ({ review }) => (
+            <div className="card review-card">
+                <div className="review-card-header">
+                    <div className="review-card-avatar">{review.user_name.charAt(0)}</div>
+                    <div>
+                        <p className="review-card-user-name">{review.user_name}</p>
+                        <p className="review-card-timestamp">{new Date(review.timestamp).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <StarRating rating={review.rating} />
+                <p className="review-card-comment">{review.comment}</p>
+            </div>
+        );
+
+        const DishCard = ({ dish, onReviewClick }) => (
+            <div className="card dish-card">
+                <div className="dish-card-content">
+                    <h3 className="dish-card-title">{dish.name}</h3>
+                    <p className="dish-card-category">{dish.category}</p>
+                    <div className="dish-card-footer">
+                        <p className="dish-card-price">₹{parseFloat(dish.price).toFixed(2)}</p>
+                        <div className="dish-card-rating">
+                            <StarRating rating={dish.avg_rating} />
+                            <span className="dish-card-review-count">({dish.review_count})</span>
+                        </div>
+                    </div>
+                </div>
+                <button onClick={() => onReviewClick(dish)} className="btn-primary">View & Review</button>
+            </div>
+        );
+
+        const ChartComponent = ({ type, data, options }) => {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            useEffect(() => {
+                if (chartRef.current) {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                    const ctx = chartRef.current.getContext('2d');
+                    chartInstance.current = new Chart(ctx, {
+                        type,
+                        data,
+                        options,
+                    });
+                }
+                return () => {
+                    if(chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [type, data, options]);
+
+            return <canvas ref={chartRef}></canvas>;
+        };
+
+        const HeatmapChart = ({ data }) => {
+            const heatmapRef = useRef(null);
+
+            useEffect(() => {
+                if (heatmapRef.current && data.length > 0) {
+                    const heatmapInstance = h337.create({
+                      container: heatmapRef.current
+                    });
+                    const max = Math.max(...data.map(d => d.value));
+                    heatmapInstance.setData({
+                      max: max,
+                      data: data
+                    });
+                }
+            }, [data]);
+            
+            return <div ref={heatmapRef} className="w-full h-96 relative"></div>;
+        };
+
+
+        // --- Modals ---
+        const ReviewModal = ({ dish, onClose, onReviewSubmit, currentUser }) => {
+            const [rating, setRating] = useState(0);
+            const [comment, setComment] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (rating > 0 && comment) {
+                    onReviewSubmit({
+                        user_id: currentUser.id,
+                        dish_id: dish.id,
+                        rating,
+                        comment
+                    });
+                } else {
+                    alert("Please provide a rating and a comment.");
+                }
+            };
+
+            return (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <button onClick={onClose} className="modal-close-btn">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                        <h2>Review: {dish.name}</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label className="form-label">Your Rating</label>
+                                <StarRating rating={rating} setRating={setRating} />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="comment">Your Comment</label>
+                                <textarea
+                                    id="comment"
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    className="form-textarea"
+                                    rows="4"
+                                    placeholder="What did you think of the dish?"
+                                ></textarea>
+                            </div>
+                            <button type="submit" className="btn-primary">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+        
+        const ChatbotModal = ({ isOpen, onClose }) => {
+            const [message, setMessage] = useState('');
+            const [chatHistory, setChatHistory] = useState([{ sender: 'bot', text: 'Hi! I am Canteen Buddy. How can I help you today?' }]);
+            const chatBodyRef = useRef(null);
+
+            const handleSendMessage = async (e) => {
+                e.preventDefault();
+                if (!message.trim()) return;
+
+                const newHistory = [...chatHistory, { sender: 'user', text: message }];
+                setChatHistory(newHistory);
+                setMessage('');
+
+                try {
+                    const response = await fetch(`${API_URL}/chatbot`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message }),
+                    });
+                    const data = await response.json();
+                    setChatHistory([...newHistory, { sender: 'bot', text: data.reply }]);
+                } catch (error) {
+                    console.error("Chatbot error:", error);
+                    setChatHistory([...newHistory, { sender: 'bot', text: "Sorry, I'm having trouble connecting. Please try again later." }]);
+                }
+            };
+
+            useEffect(() => {
+                if (chatBodyRef.current) {
+                    chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+                }
+            }, [chatHistory]);
+            
+            if(!isOpen) return null;
+
+            return (
+                 <div className="chatbot">
+                     <div className="chatbot-header">
+                         <h3>Canteen Buddy</h3>
+                         <button onClick={onClose}>
+                             <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                         </button>
+                     </div>
+                     <div ref={chatBodyRef} className="chatbot-body">
+                        {chatHistory.map((chat, index) => (
+                            <div key={index} className={`chat-message ${chat.sender}`}>
+                                <div className={`message-bubble ${chat.sender}`}>
+                                    {chat.text}
+                                </div>
+                            </div>
+                        ))}
+                     </div>
+                     <form onSubmit={handleSendMessage} className="chatbot-footer">
+                         <div className="chatbot-form">
+                            <input
+                                type="text"
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Ask something..."
+                                className="form-input"
+                            />
+                            <button type="submit">Send</button>
+                         </div>
+                     </form>
+                 </div>
+            );
+        };
+
+
+        // --- Pages ---
+        const HomePage = () => (
+            <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                <h1 style={{ color: '#4f46e5' }}>Welcome to Student Bite!</h1>
+                <p style={{ fontSize: '1.25rem', color: '#4b5563', marginBottom: '2rem' }}>Your one-stop platform for rating and discovering the best food in our campus canteen.</p>
+                <div className="grid md-grid-cols-3">
+                    <div className="card">
+                        <h3>Rate & Review</h3>
+                        <p>Share your feedback on dishes and help others make better choices.</p>
+                    </div>
+                    <div className="card">
+                        <h3>Discover Favorites</h3>
+                        <p>Check out top-rated dishes and find personalized recommendations.</p>
+                    </div>
+                    <div className="card">
+                        <h3>Climb the Leaderboard</h3>
+                        <p>Earn points for your reviews and become a top Foodie on campus!</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const DashboardPage = ({ onReviewClick, currentUser }) => {
+            const [topRated, setTopRated] = useState([]);
+            const [recommendations, setRecommendations] = useState([]);
+
+            useEffect(() => {
+                const fetchData = async () => {
+                    try {
+                        const topRatedRes = await fetch(`${API_URL}/dishes/top-rated`);
+                        setTopRated(await topRatedRes.json());
+                        const recsRes = await fetch(`${API_URL}/dishes/recommendations/${currentUser.id}`);
+                        setRecommendations(await recsRes.json());
+                    } catch (error) {
+                        console.error("Failed to fetch dashboard data:", error);
+                    }
+                };
+                fetchData();
+            }, [currentUser]);
+
+            return (
+                <div>
+                    <h1>Student Dashboard</h1>
+                    <section>
+                        <h2>⭐ Top-Rated Dishes</h2>
+                        <div className="grid md-grid-cols-2 lg-grid-cols-3">
+                            {topRated.map(dish => <DishCard key={dish.id} dish={dish} onReviewClick={onReviewClick} />)}
+                        </div>
+                    </section>
+                    <section style={{ marginTop: '2.5rem' }}>
+                        <h2>✨ Recommended For You</h2>
+                         <div className="grid md-grid-cols-2 lg-grid-cols-3">
+                            {recommendations.map(dish => <DishCard key={dish.id} dish={dish} onReviewClick={onReviewClick} />)}
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
+        const ReviewsPage = ({ selectedDish, onReviewClick, onReviewSubmit }) => {
+            const [dishes, setDishes] = useState([]);
+            const [reviews, setReviews] = useState([]);
+            const [filters, setFilters] = useState({ search: '', category: 'all', sortBy: 'rating' });
+
+            useEffect(() => {
+                const fetchDishes = async () => {
+                    try {
+                        const res = await fetch(`${API_URL}/dishes`);
+                        setDishes(await res.json());
+                    } catch (error) {
+                        console.error("Failed to fetch dishes:", error);
+                    }
+                };
+                fetchDishes();
+            }, []);
+            
+            useEffect(() => {
+                const fetchReviews = async () => {
+                    if (selectedDish) {
+                        try {
+                            const res = await fetch(`${API_URL}/reviews/${selectedDish.id}`);
+                            setReviews(await res.json());
+                        } catch (error) {
+                            console.error("Failed to fetch reviews:", error);
+                        }
+                    }
+                };
+                fetchReviews();
+            }, [selectedDish]);
+
+            const handleFilterChange = (e) => {
+                const { name, value } = e.target;
+                setFilters(prev => ({ ...prev, [name]: value }));
+            };
+
+            const filteredDishes = dishes
+                .filter(d => d.name.toLowerCase().includes(filters.search.toLowerCase()))
+                .filter(d => filters.category === 'all' || d.category === filters.category)
+                .sort((a, b) => {
+                    if(filters.sortBy === 'rating') return b.avg_rating - a.avg_rating;
+                    if(filters.sortBy === 'price_asc') return a.price - b.price;
+                    if(filters.sortBy === 'price_desc') return b.price - a.price;
+                    return 0;
+                });
+            
+            const categories = ['all', ...new Set(dishes.map(d => d.category))];
+            
+            return (
+                <div>
+                     <h1>Rate & Review Dishes</h1>
+                     <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            name="search"
+                            placeholder="Search for a dish..."
+                            className="form-input"
+                            style={{ flexGrow: 1 }}
+                            value={filters.search}
+                            onChange={handleFilterChange}
+                         />
+                         <select name="category" value={filters.category} onChange={handleFilterChange} className="form-select">
+                            {categories.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                         </select>
+                         <select name="sortBy" value={filters.sortBy} onChange={handleFilterChange} className="form-select">
+                             <option value="rating">Sort by Rating</option>
+                             <option value="price_asc">Sort by Price (Low-High)</option>
+                             <option value="price_desc">Sort by Price (High-Low)</option>
+                         </select>
+                     </div>
+
+                     <div className="grid md-grid-cols-2 lg-grid-cols-3 xl-grid-cols-4">
+                        {filteredDishes.map(dish => <DishCard key={dish.id} dish={dish} onReviewClick={onReviewClick} />)}
+                     </div>
+
+                     {selectedDish && (
+                        <div className="modal-overlay">
+                            <div className="modal-content modal-content-lg" style={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                                 <button onClick={() => onReviewClick(null)} className="modal-close-btn">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                                <h2>Reviews for {selectedDish.name}</h2>
+                                <div className="reviews-container">
+                                {reviews.length > 0 ? (
+                                    reviews.map(review => <ReviewCard key={review.id} review={review} />)
+                                ) : (
+                                    <p style={{ color: '#6b7280' }}>No reviews yet. Be the first to add one!</p>
+                                )}
+                                </div>
+                                <button onClick={() => onReviewSubmit(selectedDish)} className="btn-primary" style={{ marginTop: '1rem' }}>Add Your Review</button>
+                            </div>
+                        </div>
+                     )}
+                </div>
+            );
+        };
+
+        const LeaderboardPage = () => {
+            const [leaderboard, setLeaderboard] = useState([]);
+
+            useEffect(() => {
+                const fetchLeaderboard = async () => {
+                    try {
+                        const res = await fetch(`${API_URL}/leaderboard`);
+                        setLeaderboard(await res.json());
+                    } catch (error) {
+                        console.error("Failed to fetch leaderboard:", error);
+                    }
+                };
+                fetchLeaderboard();
+            }, []);
+
+            const getRankClass = (index) => {
+                if (index === 0) return 'rank-1';
+                if (index === 1) return 'rank-2';
+                if (index === 2) return 'rank-3';
+                return 'rank-other';
+            }
+
+            return (
+                <div>
+                     <h1>🏆 Top Foodies Leaderboard</h1>
+                     <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                        <ul className="leaderboard-list">
+                            {leaderboard.map((user, index) => (
+                                <li key={user.id} className="leaderboard-item">
+                                    <div className={`leaderboard-rank ${getRankClass(index)}`}>
+                                        {index + 1}
+                                    </div>
+                                    <div className="leaderboard-user-details">
+                                        <p className="leaderboard-user-name">{user.name}</p>
+                                        <div className="leaderboard-badges">
+                                            {user.badges && user.badges.map(badge => (
+                                                <span key={badge} className="badge">{badge}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="leaderboard-points">
+                                        <p>{user.points} pts</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                     </div>
+                </div>
+            );
+        };
+        
+        const AdminPage = () => {
+            const [page, setPage] = useState('popularity');
+            const [data, setData] = useState(null);
+            const [isLoading, setIsLoading] = useState(true);
+
+            useEffect(() => {
+                const fetchAllAdminData = async () => {
+                    setIsLoading(true);
+                    try {
+                        const endpoints = ['popularity', 'quality', 'forecasting', 'trends', 'revenue', 'heatmap'];
+                        const promises = endpoints.map(endpoint => 
+                            fetch(`${API_URL}/admin/${endpoint}`).then(res => res.json())
+                        );
+                        
+                        const results = await Promise.all(promises);
+                        
+                        const newData = endpoints.reduce((acc, endpoint, index) => {
+                            acc[endpoint] = results[index];
+                            return acc;
+                        }, {});
+
+                        setData(newData);
+                    } catch (error) {
+                        console.error("Failed to fetch admin data:", error);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+
+                fetchAllAdminData();
+            }, []);
+
+            const renderPage = () => {
+                if (isLoading) {
+                    return <p style={{ textAlign: 'center', color: '#6b7280' }}>Loading admin data...</p>;
+                }
+                
+                if (!data) {
+                    return <p style={{ textAlign: 'center', color: '#ef4444' }}>Could not load admin data. Please try again later.</p>;
+                }
+
+                switch(page) {
+                    case 'popularity':
+                        if (!data.popularity || data.popularity.length === 0) {
+                            return <p className="text-gray-500">No popularity data available. Waiting for reviews.</p>;
+                        }
+                        return (
+                           <div>
+                               <h3>Dish Popularity (by Review Count)</h3>
+                               <div className="card chart-container">
+                                  <ChartComponent type="bar" data={{
+                                      labels: data.popularity.map(d => d.name),
+                                      datasets: [{
+                                          label: '# of Reviews',
+                                          data: data.popularity.map(d => d.review_count),
+                                          backgroundColor: 'rgba(79, 70, 229, 0.8)',
+                                          borderColor: 'rgba(79, 70, 229, 1)',
+                                          borderWidth: 1
+                                      }]
+                                  }} options={{ maintainAspectRatio: false, indexAxis: 'y' }}/>
+                               </div>
+                           </div>
+                        );
+                    case 'quality':
+                        if (!data.quality || data.quality.length === 0) {
+                            return <p style={{ color: '#6b7280' }}>No quality data available. Waiting for rated reviews.</p>;
+                        }
+                        return (
+                           <div>
+                               <h3>Dish Quality (Average Ratings)</h3>
+                               <div className="card chart-container">
+                                 <ChartComponent type="doughnut" data={{
+                                      labels: data.quality.map(d => d.name),
+                                      datasets: [{
+                                          label: 'Average Rating',
+                                          data: data.quality.map(d => d.avg_rating),
+                                          backgroundColor: ['#4f46e5', '#34d399', '#f59e0b', '#ef4444', '#6366f1', '#8b5cf6'],
+                                      }]
+                                  }} options={{ maintainAspectRatio: false }} />
+                               </div>
+                           </div>
+                        );
+                    case 'forecasting':
+                        return (
+                           <div>
+                               <h3>Demand Forecasting (Next 7 Days)</h3>
+                               <div className="card chart-container">
+                                 <ChartComponent type="line" data={{
+                                      labels: data.forecasting.labels,
+                                      datasets: [{
+                                          label: 'Predicted Sales',
+                                          data: data.forecasting.predictions,
+                                          fill: false,
+                                          borderColor: 'rgb(75, 192, 192)',
+                                          tension: 0.1
+                                      }]
+                                  }} options={{ maintainAspectRatio: false }} />
+                               </div>
+                           </div>
+                        );
+                    case 'trends':
+                         return (
+                           <div>
+                               <h3>Seasonal & Trend Insights</h3>
+                               <div className="grid md-grid-cols-2">
+                                   <div className="card">
+                                       <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>🔥 Trending this Month</h4>
+                                       <p style={{ fontSize: '1.5rem', color: '#4f46e5' }}>{data.trends.monthly_trend.name}</p>
+                                       <p>{data.trends.monthly_trend.review_count} reviews</p>
+                                   </div>
+                                    <div className="card">
+                                       <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>☀️ Seasonal Favorite</h4>
+                                       <p style={{ fontSize: '1.5rem', color: '#d97706' }}>{data.trends.seasonal_favorite.name}</p>
+                                       <p>Popular in {data.trends.seasonal_favorite.season}</p>
+                                   </div>
+                               </div>
+                           </div>
+                        );
+                    case 'revenue':
+                         return (
+                           <div>
+                               <h3>Revenue & Pricing Insights</h3>
+                               <div className="grid md-grid-cols-2">
+                                   <div className="card" style={{ textAlign: 'center' }}>
+                                       <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>Total Revenue (Last 30 Days)</h4>
+                                       <p style={{ fontSize: '2.25rem', fontWeight: 800, color: '#059669' }}>₹{data.revenue.total_revenue.toFixed(2)}</p>
+                                   </div>
+                                    <div className="card" style={{ textAlign: 'center' }}>
+                                       <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem' }}>Top Earning Dish</h4>
+                                       <p style={{ fontSize: '1.5rem', color: '#4f46e5' }}>{data.revenue.top_earner.name}</p>
+                                        <p style={{ fontSize: '1.125rem', fontWeight: 600 }}>₹{data.revenue.top_earner.revenue.toFixed(2)}</p>
+                                   </div>
+                               </div>
+                           </div>
+                        );
+                    case 'heatmap':
+                        return (
+                            <div>
+                               <h3>Customer Feedback Heatmap (Rating Activity)</h3>
+                               <div className="card">
+                                   <HeatmapChart data={data.heatmap.points} />
+                               </div>
+                            </div>
+                        );
+                    default: return null;
+                }
+            }
+
+            return (
+                <div>
+                     <h1>Admin Analytics</h1>
+                     <div className="admin-nav">
+                        <button onClick={() => setPage('popularity')} className={`admin-nav-btn ${page === 'popularity' ? 'active' : ''}`}>Popularity</button>
+                        <button onClick={() => setPage('quality')} className={`admin-nav-btn ${page === 'quality' ? 'active' : ''}`}>Quality</button>
+                        <button onClick={() => setPage('forecasting')} className={`admin-nav-btn ${page === 'forecasting' ? 'active' : ''}`}>Forecasting</button>
+                        <button onClick={() => setPage('trends')} className={`admin-nav-btn ${page === 'trends' ? 'active' : ''}`}>Trends</button>
+                        <button onClick={() => setPage('revenue')} className={`admin-nav-btn ${page === 'revenue' ? 'active' : ''}`}>Revenue</button>
+                        <button onClick={() => setPage('heatmap')} className={`admin-nav-btn ${page === 'heatmap' ? 'active' : ''}`}>Heatmap</button>
+                     </div>
+                     <div>{renderPage()}</div>
+                </div>
+            );
+        };
+
+        // --- Auth Pages ---
+        const AuthFormContainer = ({ title, children, footer }) => (
+            <div className="auth-container">
+                <div className="auth-box">
+                    <h1 className="auth-brand">Student Bite</h1>
+                    <div className="auth-form-container">
+                        <h2 className="auth-form-title">{title}</h2>
+                        {children}
+                        <div className="auth-footer">
+                            {footer}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+        
+        const LoginPage = ({ onLoginSuccess, onSwitchToRegister }) => {
+            const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [showPassword, setShowPassword] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                try {
+                    const response = await fetch(`${API_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        onLoginSuccess(data.user);
+                    } else {
+                        setError(data.error || 'Login failed.');
+                    }
+                } catch (err) {
+                    setError('An error occurred. Please try again.');
+                }
+            };
+
+            return (
+                <AuthFormContainer
+                    title="Login to Your Account"
+                    footer={<p>Don't have an account? <button onClick={onSwitchToRegister}>Sign up</button></p>}
+                >
+                    <form onSubmit={handleSubmit}>
+                        {error && <p className="alert-error">{error}</p>}
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="username">Username</label>
+                            <input
+                                id="username" type="text" value={username} onChange={e => setUsername(e.target.value)}
+                                className="form-input" required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="password">Password</label>
+                            <div className="input-with-icon">
+                                <input
+                                    id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                                    className="form-input" required
+                                />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-icon-btn">
+                                    {showPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .946-3.118 3.542-5.473 6.542-6.355M17.75 5.25A10.024 10.024 0 0112 5c-4.478 0-8.268-2.943-9.542 7 .525 1.748 1.543 3.333 2.75 4.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 4.5l15 15" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" className="btn-primary">Login</button>
+                    </form>
+                </AuthFormContainer>
+            );
+        };
+
+        const RegistrationPage = ({ onSwitchToLogin }) => {
+            const [username, setUsername] = useState('');
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [success, setSuccess] = useState('');
+            const [showPassword, setShowPassword] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                setSuccess('');
+                try {
+                    const response = await fetch(`${API_URL}/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        setSuccess('Registration successful! You can now log in.');
+                        setUsername(''); setEmail(''); setPassword('');
+                    } else {
+                        setError(data.error || 'Registration failed.');
+                    }
+                } catch (err) {
+                    setError('An error occurred. Please try again.');
+                }
+            };
+
+            return (
+                <AuthFormContainer
+                    title="Create a New Account"
+                    footer={<p>Already have an account? <button onClick={onSwitchToLogin}>Log in</button></p>}
+                >
+                    <form onSubmit={handleSubmit}>
+                        {error && <p className="alert-error">{error}</p>}
+                        {success && <p className="alert-success">{success}</p>}
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="reg-username">Username</label>
+                            <input
+                                id="reg-username" type="text" value={username} onChange={e => setUsername(e.target.value)}
+                                className="form-input" required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="reg-email">Email</label>
+                            <input
+                                id="reg-email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                                className="form-input" required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="reg-password">Password</label>
+                             <div className="input-with-icon">
+                                <input
+                                    id="reg-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                                    className="form-input" required
+                                />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="input-icon-btn">
+                                    {showPassword ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .946-3.118 3.542-5.473 6.542-6.355M17.75 5.25A10.024 10.024 0 0112 5c-4.478 0-8.268-2.943-9.542 7 .525 1.748 1.543 3.333 2.75 4.5M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 4.5l15 15" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" className="btn-primary">Register</button>
+                    </form>
+                </AuthFormContainer>
+            );
+        };
+        
+
+        // --- Logged-In Application Component ---
+        function MainApp({ currentUser, onLogout }) {
+            const [page, setPage] = useState('home');
+            const [selectedDish, setSelectedDish] = useState(null);
+            const [reviewModalOpen, setReviewModalOpen] = useState(false);
+            const [dishToReview, setDishToReview] = useState(null);
+            const [isChatbotOpen, setChatbotOpen] = useState(false);
+
+            const handleReviewClick = (dish) => {
+                setSelectedDish(dish);
+            };
+            
+            const handleAddReviewClick = (dish) => {
+                setDishToReview(dish);
+                setSelectedDish(null);
+                setReviewModalOpen(true);
+            };
+
+            const handleReviewSubmit = async (reviewData) => {
+                try {
+                    const response = await fetch(`${API_URL}/reviews`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(reviewData)
+                    });
+                    if (response.ok) {
+                        alert("Review submitted successfully! You've earned points!");
+                        setReviewModalOpen(false);
+                        setDishToReview(null);
+                    } else {
+                        throw new Error('Failed to submit review');
+                    }
+                } catch (error) {
+                    console.error("Review submission error:", error);
+                    alert("There was an error submitting your review.");
+                }
+            };
+            
+            const renderPage = () => {
+                switch(page) {
+                    case 'home': return <HomePage />;
+                    case 'dashboard': return <DashboardPage currentUser={currentUser} onReviewClick={handleReviewClick} />;
+                    case 'reviews': return <ReviewsPage selectedDish={selectedDish} onReviewClick={handleReviewClick} onReviewSubmit={handleAddReviewClick} />;
+                    case 'leaderboard': return <LeaderboardPage />;
+                    case 'admin': return currentUser.role === 'admin' ? <AdminPage /> : <p>Access Denied</p>;
+                    default: return <HomePage />;
+                }
+            };
+
+            return (
+                <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+                    <nav className="navbar">
+                        <h1 className="navbar-brand" onClick={() => setPage('home')}>Student Bite</h1>
+                        <div className="navbar-links">
+                           <a href="#" onClick={() => setPage('home')}>Home</a>
+                           <a href="#" onClick={() => setPage('dashboard')}>Dashboard</a>
+                           <a href="#" onClick={() => setPage('reviews')}>Reviews</a>
+                           <a href="#" onClick={() => setPage('leaderboard')}>Leaderboard</a>
+                           {currentUser.role === 'admin' && (
+                               <a href="#" onClick={() => setPage('admin')}>Admin</a>
+                           )}
+                        </div>
+                         <div className="navbar-user-info">
+                            <div className="navbar-user-details">
+                                <p className="user-name">{currentUser.name}</p>
+                                <p className="user-points">{currentUser.points} points</p>
+                            </div>
+                            <button onClick={onLogout} className="btn-primary">Logout</button>
+                        </div>
+                    </nav>
+                    <main>
+                        {renderPage()}
+                    </main>
+
+                    {reviewModalOpen && <ReviewModal dish={dishToReview} onClose={() => setReviewModalOpen(false)} onReviewSubmit={handleReviewSubmit} currentUser={currentUser} />}
+                    
+                    {!isChatbotOpen && (
+                        <button onClick={() => setChatbotOpen(true)} className="chatbot-toggle">
+                           <span>🤖</span>
+                        </button>
+                    )}
+                    
+                    <ChatbotModal isOpen={isChatbotOpen} onClose={() => setChatbotOpen(false)} />
+                </div>
+            );
+        }
+
+        // --- Top-Level App Component ---
+        function App() {
+            const [currentUser, setCurrentUser] = useState(null);
+            const [authPage, setAuthPage] = useState('login'); // 'login' or 'register'
+
+            const handleLoginSuccess = (user) => {
+                setCurrentUser(user);
+            };
+
+            const handleLogout = () => {
+                setCurrentUser(null);
+                setAuthPage('login');
+            };
+
+            if (!currentUser) {
+                if (authPage === 'login') {
+                    return <LoginPage onLoginSuccess={handleLoginSuccess} onSwitchToRegister={() => setAuthPage('register')} />;
+                } else {
+                    return <RegistrationPage onSwitchToLogin={() => setAuthPage('login')} />;
+                }
+            }
+
+            return <MainApp currentUser={currentUser} onLogout={handleLogout} />;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
+
